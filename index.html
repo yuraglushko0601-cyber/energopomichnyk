@@ -1,140 +1,16 @@
-<!doctype html>
-<html lang="uk">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#102a43">
-<title>ЕнергоПомічник v0.9 v0.5 — 0.2 — калькулятор і каталог</title>
-<style>
-:root{--ink:#142536;--muted:#607487;--line:#dce5ec;--bg:#f3f7fa;--blue:#1769aa;--green:#13795b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-header{background:linear-gradient(120deg,#102a43,#174d70);color:white;padding:27px 18px 32px}
-.wrap{max-width:1080px;margin:auto;padding:0 16px}.brand{display:flex;gap:12px;align-items:center}.logo{width:43px;height:43px;border-radius:13px;background:white;color:#1769aa;display:grid;place-items:center;font-weight:900;font-size:24px}
-h1{font-size:clamp(25px,4vw,36px);line-height:1.15;margin:0}header p{color:#d7e8f5;max-width:700px;margin:12px 0 0}
-main{padding:23px 0 45px}.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);gap:17px;align-items:start}
-.card{background:white;border:1px solid var(--line);border-radius:16px;padding:19px;margin-bottom:16px;box-shadow:0 5px 18px #17324a0a}
-h2{font-size:19px;margin:0 0 13px}.muted{color:var(--muted);font-size:13px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}
-label{font-size:13px;color:#40576a;font-weight:650}input,select{width:100%;min-width:0;border:1px solid #cbd8e2;border-radius:9px;padding:10px;background:white;color:var(--ink);font:inherit}
-input:focus,select:focus,button:focus-visible{outline:3px solid #9bc9ed;outline-offset:1px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-button{border:0;border-radius:9px;padding:10px 13px;font:650 14px system-ui;cursor:pointer}.primary{background:var(--blue);color:white}.secondary{background:#eaf4fc;color:#14527e}.ghost{background:#f0f3f6;color:#40576a}.danger{background:#fff0ef;color:#a43b36}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.device{display:grid;grid-template-columns:minmax(0,1fr) 82px 82px 78px 34px;gap:7px;align-items:end;padding:11px 0;border-bottom:1px solid #edf1f4}
-.device-name{font-weight:650;padding-bottom:9px}.device .field label{font-size:11px}.remove{height:40px;padding:0;font-size:18px}
-.addrow{display:grid;grid-template-columns:minmax(0,1fr) 105px 105px auto;gap:8px;align-items:end;margin-top:14px}
-.highlight{background:#eaf6f1;border:1px solid #cce9dc;border-radius:12px;padding:14px;margin-bottom:12px}.highlight strong{font-size:26px;color:var(--green)}
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.metric{background:#f5f9fc;border:1px solid #e4edf3;border-radius:11px;padding:12px}
-.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{font-size:22px;display:block}.metric small{color:var(--muted);font-size:11px}
-.note{border-left:3px solid #e2b54e;background:#fff9e9;padding:11px 12px;border-radius:0 9px 9px 0;font-size:13px;color:#654e18;margin-top:13px}
-.formula{font:13px ui-monospace,monospace;background:#f4f6f8;padding:9px;border-radius:8px;overflow-wrap:anywhere}
-footer{color:var(--muted);font-size:12px;padding-bottom:28px}
-@media(max-width:790px){.layout{grid-template-columns:1fr}}
-@media(max-width:500px){.wrap{padding:0 11px}.card{padding:15px}.device{grid-template-columns:1fr 1fr 1fr 32px;gap:6px}.device-name{grid-column:1/-1;padding:0}.remove{grid-column:4;grid-row:2}.grid3{grid-template-columns:1fr 1fr}.addrow{grid-template-columns:1fr 1fr}.addrow .field:first-child{grid-column:1/-1}}
-@media print{body{background:white}.no-print,header p{display:none!important}.layout{display:block}.card{box-shadow:none;break-inside:avoid}.wrap{max-width:none}}
-</style>
-<style>
-.station{border:1px solid #dce5ec;border-radius:12px;padding:13px;margin:10px 0;background:#fff}.station h3{margin:0 0 5px;font-size:16px}.station p{margin:4px 0;font-size:13px}.station a{color:#1769aa;font-size:13px}.station .ok{color:#13795b;font-weight:700}.station .bad{color:#a43b36;font-weight:700}.station .details{color:#607487}.station-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:550px){.station-grid{grid-template-columns:1fr}}
-</style></head>
-<body>
-<header><div class="wrap">
- <div class="brand"><div class="logo">Е</div><div><h1>ЕнергоПомічник</h1><div style="color:#c9e2f4;font-size:13px">Розрахунок резервного живлення для дому</div></div></div>
- <p>Дізнайся, яка ємність акумулятора та потужність зарядної станції потрібні для роботи твоїх приладів під час відключення електроенергії.</p>
-</div></header>
-<main class="wrap"><div class="layout"><section>
- <div class="card">
-  <h2>1. Додай пристрої</h2><p class="muted">Години — сумарний час роботи кожного пристрою протягом обраного періоду.</p>
-  <div class="grid2 no-print" style="margin:13px 0">
-   <div class="field"><label for="preset">Швидкий сценарій</label><select id="preset"><option value="">Обрати сценарій…</option><option value="flat">Квартира: базові потреби</option><option value="work">Робота з дому</option><option value="house">Приватний будинок</option><option value="internet">Інтернет і зв’язок</option></select></div>
-   <div class="field"><label for="period">Період автономності</label><select id="period"><option>4</option><option selected>6</option><option>8</option><option>12</option><option>24</option></select></div>
-  </div>
-  <div id="devices"></div>
-  <div class="addrow no-print">
-   <div class="field"><label for="newName">Назва пристрою</label><input id="newName" placeholder="Наприклад, телевізор"></div>
-   <div class="field"><label for="newPower">Потужність, Вт</label><input id="newPower" type="number" min="1" value="100"></div>
-   <div class="field"><label for="newHours">Годин роботи</label><input id="newHours" type="number" min="0" max="24" step=".5" value="6"></div>
-   <button class="primary" id="add">Додати</button>
-  </div>
-  <div class="toolbar no-print"><button class="secondary" id="common">+ Пристрій із каталогу</button><button class="ghost" id="clear">Очистити список</button></div>
- </div>
- <div class="card"><h2>2. Налаштування розрахунку</h2>
-  <div class="grid3">
-   <div class="field"><label for="eff">ККД інвертора, %</label><input id="eff" type="number" min="50" max="100" value="90"></div>
-   <div class="field"><label for="dod">Допустимий розряд, %</label><input id="dod" type="number" min="10" max="100" value="85"></div>
-   <div class="field"><label for="reserve">Запас ємності, %</label><input id="reserve" type="number" min="0" max="100" value="15"></div>
-  </div><p class="muted">Значення можна змінити відповідно до характеристик конкретної станції.</p>
- </div>
-</section><aside>
- <div class="card"><h2>Результат</h2>
-  <div class="highlight"><div class="muted">Орієнтовна потрібна ємність батареї</div><strong id="capacity">— Wh</strong><div class="muted" id="kwh">—</div></div>
-  <div class="metrics">
-   <div class="metric"><span>Споживання приладів</span><strong id="energy">—</strong><small>Вт·год за період</small></div>
-   <div class="metric"><span>Сумарна потужність</span><strong id="power">—</strong><small>Вт одночасно</small></div>
-   <div class="metric"><span>Період автономності</span><strong id="periodOut">—</strong><small>годин</small></div>
-   <div class="metric"><span>Кількість приладів</span><strong id="count">—</strong><small>одиниць</small></div>
-  </div>
-  <div class="note" id="warning">Додай пристрої, щоб отримати розрахунок.</div>
-  <div class="toolbar no-print"><button class="primary" id="pdf">Зберегти звіт у PDF</button><button class="ghost" id="reset">Скинути все</button></div>
- </div>
- <div class="card"><h2>Як це рахується</h2><p class="muted">Спершу обчислюється споживання всіх приладів, потім враховуються втрати інвертора, допустима глибина розряду та запас.</p>
-  <div class="formula">Ємність = (Вт·год ÷ ККД ÷ частка розряду) × (1 + запас)</div>
-  <p class="muted">Потужність — окремий показник: станція має витримувати одночасну роботу приладів і їхні пускові навантаження.</p>
- </div>
-</aside></div><section class="card" id="stationSection"><h2>3. Підбір зарядної станції</h2><p class="muted">Розширений попередній каталог. Для більшості моделей характеристики ще потребують звірки з офіційними специфікаціями. Не приймай рішення про покупку без перевірки конкретної модифікації.</p><div class="grid2 no-print"><div class="field"><label for="stationBrand">Бренд</label><select id="stationBrand"><option value="all">Усі бренди</option><option>AFERIY</option><option>ALLPOWERS</option><option>Anker</option><option>BLUETTI</option><option>Choetech</option><option>DJI</option><option>EcoFlow</option><option>Energizer</option><option>FOSSiBOT</option><option>Jackery</option><option>OUKITEL</option><option>Oscal</option><option>Pecron</option><option>VTOMAN</option></select></div><div class="field"><label for="stationShow">Показати</label><select id="stationShow"><option value="all">Усі моделі</option><option value="fit">Лише достатні за розрахунком</option><option value="verified">Лише перевірені</option></select></div><div class="field"><label for="stationSearch">Пошук за моделлю</label><input id="stationSearch" placeholder="Наприклад, DELTA або AC180"></div><div class="field"><label for="stationMin">Мінімальна ємність, Wh</label><input id="stationMin" type="number" min="0" placeholder="Будь-яка"></div><div class="field"><label for="stationMax">Максимальна ємність, Wh</label><input id="stationMax" type="number" min="0" placeholder="Без обмежень"></div><div class="field"><label for="stationBudget">Бюджет, грн</label><input id="stationBudget" type="number" min="0" placeholder="Наприклад, 30000"></div></div><p class="muted">Додані перевірені на сторінках магазинів цінові знімки станом на 15.11.2026. Це НЕ ціни в реальному часі: перед купівлею перевіряй наявність, комплектацію та вартість у продавця. Для інших моделей можна вручну ввести ціну. Бюджетний фільтр враховує доступні знімки та власні ціни.</p><div class="card no-print" style="background:#f7fafc;border:1px solid #dce5ec;margin:12px 0">
-<h3>Оновлення цін і наявності</h3>
-<p class="muted">Серверний модуль може щодня оновлювати дозволені фіди магазинів після налаштування. У локальному режимі доступний ручний імпорт. Імпортуй JSON-фід із дозволеного джерела або експортуй шаблон для інтеграції. Для кожної пропозиції зберігаємо модель, продавця, URL товару, ціну, наявність і час перевірки.</p>
-<div class="toolbar"><button class="primary" id="feedRefresh" type="button">Оновити з сервера</button><button class="secondary" id="feedTemplate" type="button">Завантажити шаблон JSON</button><label style="display:inline-flex;align-items:center;gap:8px">Імпортувати JSON <input id="feedImport" type="file" accept=".json,application/json" style="max-width:220px"></label><button class="ghost" id="feedClear" type="button">Очистити імпорт</button></div>
-<p id="feedStatus" class="muted" aria-live="polite"></p>
-</div><div class="card no-print" style="margin:12px 0;background:#f8fbfd">
-<h3>Пускове навантаження та порівняння</h3>
-<div class="grid2"><div class="field"><label for="surgeExtra">Додатковий пусковий запас, Вт</label><input id="surgeExtra" type="number" min="0" max="20000" value="0"></div><div class="field"><label for="compareOnly">Режим підбору</label><select id="compareOnly"><option value="all">Усі моделі з позначенням ризиків</option><option value="safe">Лише перевірені й достатні за номіналом</option></select></div></div>
-<div class="toolbar no-print"><button class="secondary" id="saveProfile" type="button">Зберегти мій розрахунок</button><button class="ghost" id="loadProfile" type="button">Відновити розрахунок</button><button class="ghost" id="exportProfile" type="button">Експорт JSON</button><label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">Імпорт JSON <input type="file" id="importProfile" accept=".json,application/json" style="max-width:190px"></label></div><p class="muted" id="profileStatus" aria-live="polite">Розрахунок зберігається тільки у цьому браузері за твоєю командою.</p>
-<p class="muted">Для холодильника, насоса або компресора вкажи додаткову пускову потужність із паспорта. Якщо вона невідома, сумісність не підтверджена навіть за достатньої номінальної потужності.</p>
-</div><div class="note">Оцінка придатності має три рівні: <b>недостатньо</b> (бракує ємності або номінальної потужності), <b>попередньо достатньо</b> (обидва параметри виконано, але сумісність ще не гарантована), <b>потребує перевірки</b> (невідомі характеристики, пусковий струм чи тип виходу). Жоден рівень не є гарантією безпечного підключення.</div><div class="card" id="comparePanel"><h3>Порівняння станцій (до 4)</h3><p class="muted">Обери моделі в картках нижче.</p><div id="compareTable"></div></div><p id="stationSummary" class="muted"></p><div id="stationList" class="station-grid"></div><div class="note">Увага: це порівняння за двома параметрами, а не гарантія сумісності. Пускові струми, AC/DC виходи, локальна версія пристрою та фактична корисна ємність потребують окремої перевірки. Для підбору за AC-потужністю вважаємо, що всі додані прилади можуть працювати одночасно.</div></section></main>
-<footer class="wrap">Важливо: це попередня оцінка, а не інженерний проєкт. Реальний час роботи залежить від температури, стану батареї, пікових навантажень, пускових струмів і характеристик станції. Не підключай станцію до домашньої електромережі без належного обладнання та кваліфікованого електрика.</footer>
-<script>
-const catalog=[['Wi-Fi роутер',12],['Оптичний термінал (ONU)',5],['LED-лампа',10],['Ноутбук',60],['Смартфон — заряджання',15],['Телевізор LED',100],['Холодильник',150],['Настільний ПК',250],['Монітор',35],['Газовий котел',120],['Вентилятор',45],['Електрочайник',1800]];
-let items=[];const $=id=>document.getElementById(id);const number=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
-function addItem(name,power,hours,qty=1){items.push({name,power,hours,qty});render()}
-function render(){
- const root=$('devices');root.innerHTML='';
- if(!items.length){root.innerHTML='<p class="muted">Список порожній. Обери сценарій або додай пристрої нижче.</p>'}
- items.forEach((item,i)=>{
-  const row=document.createElement('div');row.className='device';
-  row.innerHTML='<div class="device-name"></div><div class="field"><label>Потужність, Вт</label><input type="number" min="0" max="20000" data-k="power"></div><div class="field"><label>Годин</label><input type="number" min="0" max="24" step=".5" data-k="hours"></div><div class="field"><label>Кількість</label><input type="number" min="1" max="50" data-k="qty"></div><button class="danger remove no-print" aria-label="Видалити">×</button>';
-  row.querySelector('.device-name').textContent=item.name;
-  row.querySelectorAll('input').forEach(input=>{input.value=item[input.dataset.k];input.addEventListener('input',()=>{item[input.dataset.k]=Math.max(0,number(input.value));calculate()})});
-  row.querySelector('button').addEventListener('click',()=>{items.splice(i,1);render()});root.appendChild(row);
- });calculate();
-}
-function calculate(){
- const energy=items.reduce((s,x)=>s+Math.max(0,x.power)*Math.max(0,x.hours)*Math.max(0,x.qty),0),peak=items.reduce((s,x)=>s+Math.max(0,x.power)*Math.max(0,x.qty),0);
- const eff=Math.min(100,Math.max(50,number($('eff').value,90)))/100,dod=Math.min(100,Math.max(10,number($('dod').value,85)))/100,res=Math.min(100,Math.max(0,number($('reserve').value,15)))/100;
- const capacity=energy/(eff*dod)*(1+res),fmt=n=>Math.round(n).toLocaleString('uk-UA');
- $('capacity').textContent=fmt(capacity)+' Wh';$('kwh').textContent='≈ '+(capacity/1000).toLocaleString('uk-UA',{maximumFractionDigits:2})+' кВт·год';
- $('energy').textContent=fmt(energy);$('power').textContent=fmt(peak);$('periodOut').textContent=$('period').value;$('count').textContent=items.reduce((s,x)=>s+x.qty,0);
- let message='Перевір, щоб номінальна та пікова потужність станції відповідали навантаженню.';
- if(!items.length)message='Додай пристрої, щоб отримати розрахунок.';
- else if(items.some(x=>x.hours>number($('period').value)))message='Увага: для одного чи кількох пристроїв задано більше годин роботи, ніж тривалість періоду.';
- else if(items.some(x=>/холодильник|насос|компресор|котел/i.test(x.name)))message='Для холодильників, насосів і котлів враховуй циклічність та пускові струми. Години роботи — фактичні години споживання, а не весь період відключення.';
- else if(peak>2000)message='Високе сумарне навантаження. Окремо перевір пускові струми холодильника, насосів та інших приладів із двигунами.';
- $('warning').textContent=message;renderStations(capacity,peak);
-}
-const scenarios={
- flat:[['Wi-Fi роутер',12,6],['Оптичний термінал (ONU)',5,6],['Холодильник',150,3],['LED-лампа',10,5,3],['Смартфон — заряджання',15,2,2]],
- work:[['Wi-Fi роутер',12,8],['Оптичний термінал (ONU)',5,8],['Ноутбук',60,6],['Монітор',35,6],['LED-лампа',10,5,2]],
- house:[['Wi-Fi роутер',12,8],['Холодильник',150,4],['Газовий котел',120,6],['LED-лампа',10,5,4]],
- internet:[['Wi-Fi роутер',12,8],['Оптичний термінал (ONU)',5,8],['Смартфон — заряджання',15,2,2]]
-};
-$('preset').addEventListener('change',e=>{if(scenarios[e.target.value]){items=[];scenarios[e.target.value].forEach(x=>items.push({name:x[0],power:x[1],hours:x[2],qty:x[3]||1}));render()}});
-$('period').addEventListener('change',calculate);['eff','dod','reserve'].forEach(id=>$(id).addEventListener('input',calculate));
-$('add').addEventListener('click',()=>{let name=$('newName').value.trim(),p=number($('newPower').value),h=number($('newHours').value);if(!name||p<=0||h<0||h>24){alert('Вкажи назву, потужність більше 0 Вт та час від 0 до 24 годин.');return}addItem(name,p,h);$('newName').value=''});
-$('common').addEventListener('click',()=>{let promptText='Введи назву зі списку:\\n'+catalog.map(x=>x[0]+' — '+x[1]+' Вт').join('\\n');let name=prompt(promptText);if(!name)return;let found=catalog.find(x=>x[0].toLowerCase()===name.trim().toLowerCase());if(found)addItem(found[0],found[1],number($('period').value));else alert('Не знайшов точного збігу. Додай пристрій через поля нижче.')});
-$('clear').addEventListener('click',()=>{items=[];render()});
-$('reset').addEventListener('click',()=>{items=[];$('preset').value='';$('period').value='6';$('eff').value=90;$('dod').value=85;$('reserve').value=15;render()});
-
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#102a43"><meta name="description" content="ЕнергоПомічник — безкоштовний підбір зарядної станції для квартири, будинку або роботи з дому. Розрахунок автономності та порівняння моделей."><title>ЕнергоПомічник — підбір зарядної станції</title><style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#142536;background:#f4f7fa}*{box-sizing:border-box}body{margin:0}header{background:#102a43;color:white;padding:24px 18px}.wrap{max-width:1100px;margin:auto}header .wrap{display:flex;align-items:center;gap:14px}.logo{font-size:30px}h1{font-size:24px;margin:0}header p{margin:5px 0 0;color:#c9d8e5;font-size:14px}main{padding:24px 16px 55px}h2{font-size:22px;margin:0 0 8px}h3{font-size:18px;margin:0 0 8px}.sub{color:#607589;font-size:14px;line-height:1.55}.card{background:white;border:1px solid #dce5ed;border-radius:17px;padding:22px;margin-bottom:16px;box-shadow:0 4px 20px #163a5610}.steps{display:flex;gap:8px;margin:0 0 20px}.step{flex:1;height:7px;background:#e2eaf0;border-radius:12px}.step.active{background:#1976b8}.step.done{background:#32a878}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}.choice{border:2px solid #dce5ed;background:white;border-radius:13px;padding:18px 12px;text-align:left;cursor:pointer;font:inherit;min-height:86px}.choice.selected{border-color:#1769aa;background:#eef7ff}.choice b{display:block;margin-bottom:6px}.choice span{font-size:13px;color:#66798a}.nav{display:flex;gap:12px;justify-content:space-between;margin-top:22px}button{cursor:pointer;font:inherit}button.primary{background:#1769aa;color:white;border:0;padding:13px 22px;border-radius:10px;font-weight:700}button.secondary{background:#eaf2f8;color:#17466b;border:0;padding:12px 18px;border-radius:10px;font-weight:600}button:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none!important}.device-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.device{border:1px solid #dce5ed;border-radius:12px;padding:13px;display:flex;align-items:center;gap:9px}.device input{width:19px;height:19px;accent-color:#1769aa}.device label{flex:1;cursor:pointer}.device small{display:block;color:#6a7f8f;font-size:12px;margin-top:3px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}label.field{display:block;font-size:14px;font-weight:600}input[type=number],input[type=text],select{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #cddbe7;border-radius:9px;font:inherit;background:white;color:#142536}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}.metric{background:#f1f7fc;padding:16px;border-radius:12px}.metric strong{display:block;font-size:25px}.metric small{color:#5f7180}.notice{border-left:4px solid #e4aa42;background:#fff8e8;padding:13px 15px;border-radius:6px;margin:15px 0;line-height:1.5;font-size:14px}.good{border-left-color:#34a77b;background:#f0faf5}.results{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.result{border:1px solid #dbe5ec;border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:9px}.result h3{margin:0}.result .tag{font-size:12px;font-weight:700;color:#1769aa}.result p{margin:0;font-size:14px;line-height:1.45}.result .price{font-size:18px;font-weight:700}.result a{color:#1769aa}.result .bottom{margin-top:auto}.details{font-size:13px;color:#687f8f}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.toolbar select,.toolbar input{width:auto;max-width:230px;margin:0}.compare{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:11px;border-bottom:1px solid #dce5ed;min-width:125px}footer{padding:20px;color:#647889;font-size:12px;line-height:1.6;text-align:center}details{margin-top:15px}summary{cursor:pointer;font-weight:650;padding:10px 0}.fine{font-size:12px;color:#63798b}.qty{width:80px!important}.count{color:#66798a;font-size:13px}@media(max-width:700px){.choices,.results,.formgrid,.metric-grid{grid-template-columns:1fr}.device-list{grid-template-columns:1fr}.card{padding:17px}.choice{min-height:66px}.metric strong{font-size:21px}}@media print{header,.nav,.toolbar,button,details,footer{display:none!important}body{background:white}.card{box-shadow:none}}
+</style></head><body><header><div class="wrap"><div class="logo">⚡</div><div><h1>ЕнергоПомічник</h1><p>Підберемо резервне живлення під твої потреби</p></div></div></header><main class="wrap"><div id="wizard"><div class="steps" aria-label="Етапи"><div class="step active"></div><div class="step"></div><div class="step"></div><div class="step"></div></div>
+<section class="card panel" data-step="0"><h2>Де використовуватимеш станцію?</h2><p class="sub">Обери найближчий варіант — ми запропонуємо типові прилади, які можна змінити.</p><div class="choices" id="scenarios"><button class="choice selected" data-scenario="flat"><b>🏢 Квартира</b><span>Світло, холодильник, інтернет</span></button><button class="choice" data-scenario="house"><b>🏠 Будинок</b><span>Котел, освітлення, зв'язок</span></button><button class="choice" data-scenario="work"><b>💻 Робота з дому</b><span>Ноутбук, монітор, роутер</span></button></div></section>
+<section class="card panel hidden" data-step="1"><h2>Скільки годин немає світла?</h2><p class="sub">Вкажи бажану тривалість автономної роботи.</p><div class="choices" id="hours"><button class="choice" data-hours="4"><b>4 години</b></button><button class="choice selected" data-hours="6"><b>6 годин</b></button><button class="choice" data-hours="8"><b>8 годин</b></button><button class="choice" data-hours="12"><b>12 годин</b></button></div></section>
+<section class="card panel hidden" data-step="2"><h2>Що потрібно живити?</h2><p class="sub">Обери прилади. Потужності — орієнтовні; для точного розрахунку краще взяти їх із шильдика або паспорта пристрою.</p><div class="device-list" id="devices"></div><details><summary>⚙️ Уточнити потужність та час роботи приладів</summary><div id="deviceDetails"></div><p class="fine">Для холодильника вказуй орієнтовні фактичні години роботи компресора, а не весь період відключення. Значення за замовчуванням є лише припущенням.</p></details></section>
+<section class="card panel hidden" data-step="3"><h2>Який бюджет?</h2><p class="sub">Ціни в каталозі — історичні знімки, не поточні пропозиції. Ми не приховуватимемо модель тільки тому, що ціна невідома.</p><div class="choices" id="budgets"><button class="choice" data-budget="15000"><b>До 15 000 грн</b></button><button class="choice selected" data-budget="30000"><b>До 30 000 грн</b></button><button class="choice" data-budget="50000"><b>До 50 000 грн</b></button><button class="choice" data-budget="0"><b>Без обмежень</b></button></div><details><summary>⚙️ Розширені налаштування</summary><div class="formgrid"><label class="field">ККД інвертора, %<input id="eff" type="number" value="90" min="50" max="100"></label><label class="field">Доступна частка ємності, %<input id="dod" type="number" value="85" min="10" max="100"></label><label class="field">Запас ємності, %<input id="reserve" type="number" value="15" min="0" max="100"></label><label class="field">Додаткова пускова потужність, Вт<input id="surge" type="number" value="0" min="0" max="20000"></label></div><p class="fine">Без підтверджених пікових характеристик станції автоматично гарантувати запуск компресорів і насосів неможливо.</p></details></section>
+<div class="nav"><button class="secondary" id="back" disabled>Назад</button><button class="primary" id="next">Далі →</button></div></div>
+<section class="card hidden" id="output"><h2>Твій результат</h2><p class="sub" id="summary"></p><div class="metric-grid"><div class="metric"><small>Потрібна ємність</small><strong id="required">—</strong></div><div class="metric"><small>Одночасна потужність</small><strong id="peak">—</strong></div><div class="metric"><small>Енергія за період</small><strong id="consumption">—</strong></div></div><div class="notice" id="risk"></div><div class="toolbar"><button class="secondary" id="edit">← Змінити відповіді</button><button class="secondary" id="save">Зберегти розрахунок</button><button class="secondary" id="print">Зберегти як PDF</button></div><p class="fine" id="saved"></p></section>
+<section class="card hidden" id="recommend"><h2>Зарядні станції</h2><p class="sub">Спочатку показуємо моделі з підтвердженими характеристиками. Інші доступні в повному каталозі, але їх не позначаємо перевіреними.</p><div class="toolbar"><label class="field">Бренд<select id="brand"><option value="">Усі бренди</option></select></label><label class="field">Пошук моделі<input id="search" type="text" placeholder="Наприклад, AC180"></label><label class="field">Показати<select id="filter"><option value="verified">Перевірені моделі</option><option value="all">Усі 64 моделі</option></select></label></div><p class="count" id="matches"></p><div class="results" id="cards"></div><details id="comparison"><summary>Порівняння вибраних моделей (до 4)</summary><div class="compare" id="compare"></div></details></section>
+</main><footer class="wrap">Результати орієнтовні, не гарантують сумісності або фактичного часу роботи. Підключення до домашньої мережі має виконувати кваліфікований електрик. Ціни не оновлюються в реальному часі.</footer><script>
 const stations=[{"brand":"EcoFlow","model":"RIVER 2","wh":256,"w":300,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"EcoFlow","model":"RIVER 2 Max","wh":512,"w":500,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"EcoFlow","model":"RIVER 2 Pro","wh":768,"w":800,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"EcoFlow","model":"RIVER 3","wh":245,"w":300,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"EcoFlow","model":"RIVER 3 Plus","wh":286,"w":600,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"EcoFlow","model":"DELTA 2","wh":1024,"w":1800,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"EcoFlow","model":"DELTA 3","wh":1024,"w":1800,"chem":"LiFePO₄","solar":500,"source":"https://eu.ecoflow.com/products/delta-3-series-portable-power-station","verified":true},{"brand":"EcoFlow","model":"DELTA 3 Plus","wh":1024,"w":1800,"chem":"LiFePO₄","solar":1000,"source":"https://manuals.ecoflow.com/redirect?to=%2Fproduct%2Fdelta-3-plus","verified":true},{"brand":"EcoFlow","model":"DELTA 2 Max","wh":2048,"w":2400,"chem":"LiFePO₄","solar":1000,"source":"https://www.ecoflow.no/media/content/pdf/Ecoflow/EcoFlow-DELTA-2-Max-User-Manual%28en%29.pdf","verified":true},{"brand":"EcoFlow","model":"DELTA Pro","wh":3600,"w":3600,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"EB3A","wh":268,"w":600,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"AC2A","wh":204,"w":300,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"AC50B","wh":448,"w":700,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"AC50P","wh":504,"w":700,"chem":"LiFePO₄","solar":null,"source":"https://bluetti.com/wp-content/uploads/2025/01/Premium-Series-Datasheet-En-V1.0-UK.pdf","verified":true},{"brand":"BLUETTI","model":"AC70","wh":768,"w":1000,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"AC70P","wh":864,"w":1000,"chem":"LiFePO₄","solar":500,"source":"https://bluetti.com/wp-content/uploads/2024/07/AC70P-Spec.pdf","verified":true},{"brand":"BLUETTI","model":"AC180","wh":1152,"w":1800,"chem":"LiFePO₄","solar":500,"source":"https://www.bluettipower.eu/pages/ac180","verified":true},{"brand":"BLUETTI","model":"AC180P","wh":1440,"w":1800,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"AC200L","wh":2048,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"BLUETTI","model":"AC200PL","wh":2304,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Anker","model":"SOLIX C300","wh":288,"w":300,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Anker","model":"SOLIX C800","wh":768,"w":1200,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Anker","model":"SOLIX C1000 (A1761, EU)","wh":1056,"w":1800,"chem":"LiFePO₄","solar":600,"source":"https://service.anker.com/article-description/Anker-SOLIX-C1000-C1000X-Portable-Power-Station-USER-GUIDE-A1761-en-GB","verified":true},{"brand":"Anker","model":"SOLIX C1000 Gen 2","wh":1024,"w":2000,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Anker","model":"SOLIX F2000","wh":2048,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Anker","model":"SOLIX F3800","wh":3840,"w":6000,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Jackery","model":"Explorer 240 v2","wh":256,"w":300,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Jackery","model":"Explorer 300 Plus","wh":288,"w":300,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Jackery","model":"Explorer 500 v2","wh":512,"w":500,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Jackery","model":"Explorer 1000 v2","wh":1070,"w":1500,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Jackery","model":"Explorer 2000 v2","wh":2042,"w":2200,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"Jackery","model":"Explorer 3000 v2","wh":3072,"w":3600,"chem":"Не перевірено","solar":null,"source":"https://hotline.ua/ua/mobile/zaryadnye-stancii/","verified":false},{"brand":"OUKITEL","model":"P800E","wh":512,"w":800,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"OUKITEL","model":"P1000E Plus","wh":1024,"w":1800,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"OUKITEL","model":"P2001E","wh":2000,"w":2000,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"OUKITEL","model":"P2400E","wh":2048,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"FOSSiBOT","model":"F800","wh":512,"w":800,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"FOSSiBOT","model":"F1200","wh":1024,"w":1200,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"FOSSiBOT","model":"F1800","wh":1024,"w":1800,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"FOSSiBOT","model":"F2400","wh":2048,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"FOSSiBOT","model":"F3600","wh":3840,"w":3600,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"ALLPOWERS","model":"R600","wh":299,"w":600,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"ALLPOWERS","model":"S700","wh":606,"w":700,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"ALLPOWERS","model":"R1500","wh":1152,"w":1800,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"ALLPOWERS","model":"R2500","wh":2016,"w":2500,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"ALLPOWERS","model":"R4000","wh":3456,"w":4000,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"DJI","model":"Power 500","wh":512,"w":1000,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"DJI","model":"Power 1000","wh":1024,"w":2200,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"DJI","model":"Power 2000","wh":2048,"w":3000,"chem":"Не перевірено","solar":null,"source":"https://quanta.com.ua/power-stantsii","verified":false},{"brand":"Pecron","model":"E600LFP","wh":614,"w":1200,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Pecron","model":"E1500LFP","wh":1536,"w":2200,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Pecron","model":"E2000LFP","wh":1920,"w":2000,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"AFERIY","model":"P010","wh":512,"w":800,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"AFERIY","model":"P110","wh":1248,"w":1200,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"AFERIY","model":"P210","wh":2048,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"VTOMAN","model":"Jump 600X","wh":299,"w":600,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"VTOMAN","model":"FlashSpeed 1500","wh":1548,"w":1500,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"VTOMAN","model":"Jump 1800","wh":1548,"w":1800,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Choetech","model":"BS005","wh":499,"w":500,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Choetech","model":"BS006","wh":1024,"w":1200,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Oscal","model":"PowerMax 6000","wh":3600,"w":6000,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Oscal","model":"PowerMax 2400","wh":1872,"w":2400,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Energizer","model":"PPS320","wh":320,"w":300,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false},{"brand":"Energizer","model":"PPS700","wh":626,"w":700,"chem":"Не перевірено","solar":null,"source":"https://comfy.ua/ua/charging-stations/","verified":false}];
-// Цінові знімки з відкритих сторінок українських продавців; НЕ live-API.
-// Посилання веде до сторінки каталогу, на якій було зафіксовано ціну.
-const priceSnapshots={
+const prices={
  'EcoFlow|RIVER 2':{uah:11498,shop:'EcoFlow Україна',url:'https://ecoflow.com.ua/power-station/',date:'2026-11-15'},
  'EcoFlow|RIVER 2 Max':{uah:20590,shop:'VR Store',url:'https://vr-store.com.ua/ua/portatyvnye-zariadnye-stantsyy',date:'2026-11-15'},
  'EcoFlow|RIVER 3 Plus':{uah:17187,shop:'EcoFlow Україна',url:'https://ecoflow.com.ua/power-station/',date:'2026-11-15'},
@@ -147,208 +23,72 @@ const priceSnapshots={
  'BLUETTI|AC180P':{uah:41990,shop:'VR Store (очікується)',url:'https://vr-store.com.ua/ua/portatyvnye-zariadnye-stantsyy',date:'2026-11-15'},
  'OUKITEL|P1000E Plus':{uah:29990,shop:'VR Store',url:'https://vr-store.com.ua/ua/portatyvnye-zariadnye-stantsyy',date:'2026-11-15'}
 };
-
-// Окремі записи цін/наявності. Фід імпортується вручну; автоматичне фонове
-// оновлення потребує серверного завдання та дозволеного API/фіда продавця.
-const OFFER_STORAGE='energyOffersV06';
-const offerKey=o=>[o.brand,o.model,o.sku,o.shop].join('|');
-function validOffer(o){
- if(!o||typeof o!=='object')return false;
- if(![o.brand,o.model,o.sku,o.shop,o.url,o.checkedAt].every(x=>typeof x==='string'&&x.trim()))return false;
- if(!['in_stock','out_of_stock','preorder','unknown'].includes(o.availability))return false;
- if(!Number.isFinite(o.priceUah)||o.priceUah<=0||o.priceUah>10000000)return false;
- try{const u=new URL(o.url);if(u.protocol!=='https:')return false;}catch(e){return false;}
- return !Number.isNaN(Date.parse(o.checkedAt));
+const definitions=[['Wi-Fi роутер',12],['Оптичний термінал (ONU)',5],['LED-освітлення',20],['Ноутбук',60],['Телевізор',100],['Холодильник',150],['Монітор',35],['Газовий котел',120],['Смартфон',15],['Настільний ПК',250],['Електрочайник',1800]];
+const presets={flat:['Wi-Fi роутер','Оптичний термінал (ONU)','LED-освітлення','Холодильник'],house:['Wi-Fi роутер','LED-освітлення','Газовий котел','Холодильник'],work:['Wi-Fi роутер','Оптичний термінал (ONU)','Ноутбук','Монітор']};
+const $=id=>document.getElementById(id),fmt=n=>Math.round(n).toLocaleString('uk-UA');
+let scenario='flat',hours=6,budget=30000,step=0,selected=new Set(presets.flat),values={},compare=new Set(),last=null;
+function initValues(){for(const [n,w] of definitions)values[n]={w,h:n==='Холодильник'?Math.min(3,hours*.5):hours,qty:1}}
+initValues();
+function choose(group,attr,value){document.querySelectorAll('#'+group+' [data-'+attr+']').forEach(b=>b.classList.toggle('selected',b.dataset[attr]===String(value)))}
+document.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{scenario=b.dataset.scenario;choose('scenarios','scenario',scenario);selected=new Set(presets[scenario]);renderDevices()}));
+document.querySelectorAll('[data-hours]').forEach(b=>b.addEventListener('click',()=>{hours=Number(b.dataset.hours);choose('hours','hours',hours);for(const [n] of definitions)values[n].h=n==='Холодильник'?Math.min(3,hours*.5):hours;renderDevices()}));
+document.querySelectorAll('[data-budget]').forEach(b=>b.addEventListener('click',()=>{budget=Number(b.dataset.budget);choose('budgets','budget',budget)}));
+function renderDevices(){
+ const root=$('devices'),details=$('deviceDetails');root.replaceChildren();details.replaceChildren();
+ for(const [name,w] of definitions){
+  const row=document.createElement('div');row.className='device';const cb=document.createElement('input');cb.type='checkbox';cb.checked=selected.has(name);cb.id='d'+definitions.findIndex(x=>x[0]===name);cb.addEventListener('change',()=>{cb.checked?selected.add(name):selected.delete(name)});
+  const label=document.createElement('label');label.htmlFor=cb.id;const strong=document.createElement('strong');strong.textContent=name;const small=document.createElement('small');small.textContent='Орієнтовно '+w+' Вт';label.append(strong,small);row.append(cb,label);root.append(row);
+  const wrap=document.createElement('div');wrap.className='formgrid';wrap.style.marginBottom='12px';
+  const heading=document.createElement('div');heading.textContent=name;heading.style.fontWeight='650';heading.style.gridColumn='1/-1';wrap.append(heading);
+  for(const [key,title,min,max,stepValue] of [['w','Потужність, Вт',1,20000,1],['h','Фактично працює, год',0,24,.5],['qty','Кількість',1,50,1]]){
+   const l=document.createElement('label');l.className='field';l.textContent=title;const input=document.createElement('input');input.type='number';input.min=min;input.max=max;input.step=stepValue;input.value=values[name][key];input.addEventListener('change',()=>{values[name][key]=Number(input.value)});l.append(input);wrap.append(l)
+  }details.append(wrap)
+ }
 }
-let importedOffers=(()=>{try{const a=JSON.parse(localStorage.getItem(OFFER_STORAGE)||'[]');return Array.isArray(a)?a.filter(validOffer):[]}catch(e){return []}})();
-function downloadJSON(name,data){
- const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
- const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+renderDevices();
+function showStep(){document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('hidden',i!==step));document.querySelectorAll('.step').forEach((e,i)=>{e.classList.toggle('active',i===step);e.classList.toggle('done',i<step)});$('back').disabled=step===0;$('next').textContent=step===3?'Підібрати станцію →':'Далі →'}
+$('back').onclick=()=>{step=Math.max(0,step-1);showStep()};
+$('next').onclick=()=>{if(step===2&&!selected.size){alert('Обери хоча б один прилад');return}if(step<3){step++;showStep()}else calculate()};
+function numeric(id,low,high){const n=Number($(id).value);return Number.isFinite(n)?Math.min(high,Math.max(low,n)):low}
+function calculate(){
+ const chosen=[...selected].map(n=>({name:n,...values[n]}));
+ if(chosen.some(x=>!Number.isFinite(x.w)||x.w<=0||x.w>20000||!Number.isFinite(x.h)||x.h<0||x.h>hours||!Number.isInteger(x.qty)||x.qty<1||x.qty>50)){alert('Перевір потужність, час роботи та кількість приладів. Час не може перевищувати тривалість відключення.');return}
+ const energy=chosen.reduce((s,x)=>s+x.w*x.h*x.qty,0),power=chosen.reduce((s,x)=>s+x.w*x.qty,0);
+ const eff=numeric('eff',50,100)/100,dod=numeric('dod',10,100)/100,reserve=numeric('reserve',0,100)/100,surge=numeric('surge',0,20000);
+ const wh=energy/eff/dod*(1+reserve),motor=chosen.some(x=>/Холодильник|котел/i.test(x.name));
+ last={energy,power,wh,surge,motor,chosen,hours,budget,eff,dod,reserve};
+ $('wizard').classList.add('hidden');$('output').classList.remove('hidden');$('recommend').classList.remove('hidden');
+ $('required').textContent=fmt(wh)+' Wh';$('peak').textContent=fmt(power)+' W';$('consumption').textContent=fmt(energy)+' Wh';
+ $('summary').textContent=hours+' годин автономності · '+chosen.length+' типів приладів · '+(budget?'бюджет до '+fmt(budget)+' грн':'без обмеження бюджету');
+ $('risk').textContent=motor?'Увага: холодильник або котел можуть мати пускове навантаження. Поки немає перевірених пікових характеристик кожної станції, сумісність не гарантована.':surge?'Вказано додаткову пускову потужність. Для сумісності треба перевірити пікову потужність конкретної моделі.':'Підбір попередній: перед покупкою перевір виходи, комплектацію й характеристики конкретної модифікації.';
+ renderCards();$('output').scrollIntoView({behavior:'smooth',block:'start'});
 }
-const sampleFeed={schemaVersion:1,offers:[{
- brand:'EcoFlow',model:'DELTA 3 Plus',sku:'EF-DL-H10-4-EU',
- shop:'Приклад продавця',url:'https://example.com/product',
- priceUah:43999,availability:'unknown',checkedAt:'2026-11-15T08:00:00+02:00'
-}]};
-async function refreshOffers(){
- const status=$('feedStatus');status.textContent='Перевіряємо опублікований фід…';
- try{
-  const response=await fetch('./offers.json',{cache:'no-store'});
-  if(!response.ok)throw Error('HTTP '+response.status);
-  const data=await response.json();
-  if(data.schemaVersion!==1||!Array.isArray(data.offers)||!data.offers.every(validOffer))throw Error('Некоректний формат даних');
-  const known=new Set(stations.map(x=>x.brand+'|'+x.model));
-  const accepted=data.offers.filter(o=>known.has(o.brand+'|'+o.model));
-  importedOffers=[...new Map(accepted.map(o=>[offerKey(o),o])).values()];
-  localStorage.setItem(OFFER_STORAGE,JSON.stringify(importedOffers));
-  status.textContent=`Завантажено ${importedOffers.length} пропозицій. Час перевірки визначається за checkedAt; ціни можуть змінитися.`;
-  calculate();
- }catch(err){status.textContent='Серверний фід недоступний: '+err.message+'. Скористайся ручним імпортом.';}
+$('edit').onclick=()=>{$('wizard').classList.remove('hidden');$('output').classList.add('hidden');$('recommend').classList.add('hidden');showStep();window.scrollTo({top:0,behavior:'smooth'})};
+$('print').onclick=()=>window.print();
+$('save').onclick=()=>{try{localStorage.setItem('energopomichnyk-v1',JSON.stringify({scenario,hours,budget,selected:[...selected],values,settings:{eff:$('eff').value,dod:$('dod').value,reserve:$('reserve').value,surge:$('surge').value}}));$('saved').textContent='Збережено в цьому браузері.'}catch(e){$('saved').textContent='Не вдалося зберегти.'}};
+try{const raw=localStorage.getItem('energopomichnyk-v1');if(raw){const p=JSON.parse(raw);if(p&&presets[p.scenario]&&[4,6,8,12].includes(p.hours)&&Array.isArray(p.selected)&&p.selected.every(n=>definitions.some(d=>d[0]===n))&&p.values){scenario=p.scenario;hours=p.hours;budget=Number(p.budget)||0;selected=new Set(p.selected);for(const [n] of definitions){const v=p.values[n];if(v&&Number.isFinite(v.w)&&Number.isFinite(v.h)&&Number.isInteger(v.qty))values[n]=v}choose('scenarios','scenario',scenario);choose('hours','hours',hours);choose('budgets','budget',budget);if(p.settings)for(const k of ['eff','dod','reserve','surge'])if(p.settings[k]!==undefined)$(k).value=p.settings[k];renderDevices()}}}catch(e){}
+for(const brand of [...new Set(stations.map(x=>x.brand))].sort()){const o=document.createElement('option');o.value=brand;o.textContent=brand;$('brand').append(o)}
+for(const id of ['brand','search','filter'])$(id).addEventListener('input',renderCards);
+function priceFor(s){return prices[s.brand+'|'+s.model]||null}
+function state(s){if(!last)return 'unknown';if(s.wh<last.wh||s.w<last.power)return 'fail';if(!s.verified||last.motor||last.surge)return 'check';return 'candidate'}
+function renderCards(){
+ if(!last)return;const brand=$('brand').value,term=$('search').value.trim().toLowerCase(),verified=$('filter').value==='verified';
+ let list=stations.filter(s=>(!brand||s.brand===brand)&&(!term||(s.brand+' '+s.model).toLowerCase().includes(term))&&(!verified||s.verified));
+ list.sort((a,b)=>{const rank={candidate:0,check:1,fail:2};return rank[state(a)]-rank[state(b)]||Math.abs(a.wh-last.wh)-Math.abs(b.wh-last.wh)});
+ $('matches').textContent=list.length+' моделей · '+stations.filter(s=>s.verified).length+' із '+stations.length+' мають звірені характеристики';
+ const root=$('cards');root.replaceChildren();
+ for(const s of list){
+  const card=document.createElement('article');card.className='result';const title=document.createElement('h3');title.textContent=s.brand+' '+s.model;card.append(title);
+  const verdict=document.createElement('div');verdict.className='tag';const st=state(s);verdict.textContent=st==='fail'?'Не відповідає потрібній ємності або потужності':st==='candidate'?'Попередньо відповідає розрахунку':'Потрібна додаткова перевірка';card.append(verdict);
+  const info=document.createElement('p');info.textContent=fmt(s.wh)+' Wh · '+fmt(s.w)+' W · '+(s.verified?'характеристики звірені':'характеристики попередні');card.append(info);
+  if(st!=='fail'&&last.energy>0){const runtime=document.createElement('p');const avg=last.energy/last.hours;runtime.textContent='Теоретична автономність: '+(s.wh*last.eff*last.dod/avg).toLocaleString('uk-UA',{maximumFractionDigits:1})+' год за повторення цього профілю';card.append(runtime)}
+  const price=priceFor(s);const pr=document.createElement('p');pr.className='price';pr.textContent=price?fmt(price.uah)+' грн*':'Ціна невідома';card.append(pr);
+  if(price){const hint=document.createElement('p');hint.className='fine';hint.textContent='*Історична ціна '+price.date+', не підтверджена зараз';card.append(hint)}
+  if(last.budget&&price&&price.uah>last.budget){const note=document.createElement('p');note.className='fine';note.textContent='Вище вказаного бюджету';card.append(note)}
+  const bottom=document.createElement('div');bottom.className='bottom';const check=document.createElement('label');const cb=document.createElement('input');cb.type='checkbox';cb.checked=compare.has(s.brand+'|'+s.model);cb.addEventListener('change',()=>{const key=s.brand+'|'+s.model;if(cb.checked&&compare.size>=4){cb.checked=false;alert('Максимум 4 моделі');return}cb.checked?compare.add(key):compare.delete(key);renderCompare()});check.append(cb,' Порівняти');bottom.append(check);
+  if(s.verified){const link=document.createElement('a');link.href=s.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Характеристики виробника';link.style.display='block';link.style.marginTop='8px';bottom.append(link)}
+  card.append(bottom);root.append(card)
+ }renderCompare()
 }
-$('feedRefresh').addEventListener('click',refreshOffers);
-$('feedTemplate').addEventListener('click',()=>downloadJSON('energopomichnyk_feed_template.json',sampleFeed));
-$('feedImport').addEventListener('change',async e=>{
- const file=e.target.files[0];if(!file)return;
- try{
-  if(file.size>1000000)throw Error('Файл завеликий (максимум 1 МБ)');
-  const data=JSON.parse(await file.text());
-  if(data.schemaVersion!==1||!Array.isArray(data.offers)||data.offers.length>2000)throw Error('Неправильна структура фіда');
-  if(!data.offers.every(validOffer))throw Error('Деякі пропозиції мають неправильні або неповні поля');
-  const known=new Set(stations.map(x=>x.brand+'|'+x.model));
-  if(!data.offers.every(o=>known.has(o.brand+'|'+o.model)))throw Error('Фід містить модель, якої немає в каталозі');
-  importedOffers=[...new Map(data.offers.map(o=>[offerKey(o),o])).values()];
-  localStorage.setItem(OFFER_STORAGE,JSON.stringify(importedOffers));
-  $('feedStatus').textContent=`Імпортовано ${importedOffers.length} пропозицій. Дані не перевіряються автоматично.`;
-  calculate();
- }catch(err){$('feedStatus').textContent='Помилка імпорту: '+err.message;}
- e.target.value='';
-});
-$('feedClear').addEventListener('click',()=>{
- importedOffers=[];localStorage.removeItem(OFFER_STORAGE);
- $('feedStatus').textContent='Імпортовані пропозиції очищено.';calculate();
-});
-function offersFor(st){return importedOffers.filter(o=>o.brand===st.brand&&o.model===st.model)}
-function activeOffers(st){
- return offersFor(st).filter(o=>o.availability==='in_stock'&&Date.now()-Date.parse(o.checkedAt)<86400000);
-}
-
-const selectedModels=new Set();
-const PROFILE_KEY='energopomichnyk-profile-v09';
-function currentLoad(){
- const period=Math.max(1,Number($('period').value)||6);
- const energy=items.reduce((sum,x)=>sum+Math.max(0,x.power)*Math.max(0,x.hours)*Math.max(0,x.qty),0);
- const power=items.reduce((sum,x)=>sum+Math.max(0,x.power)*Math.max(0,x.qty),0);
- const eff=Math.min(1,Math.max(.5,(Number($('eff').value)||90)/100));
- const dod=Math.min(1,Math.max(.1,(Number($('dod').value)||85)/100));
- const reserve=Math.min(1,Math.max(0,(Number($('reserve').value)||0)/100));
- const surge=Math.max(0,Number($('surgeExtra').value)||0);
- return {period,energy,power,eff,dod,reserve,surge,requiredWh:energy/(eff*dod)*(1+reserve)};
-}
-function assessment(st,load){
- const problems=[];
- if(!load.energy)return {level:'unknown',message:'Додай пристрої для оцінки',problems:[]};
- if(st.wh<load.requiredWh)problems.push('бракує '+Math.ceil(load.requiredWh-st.wh)+' Wh ємності');
- if(st.w<load.power)problems.push('бракує '+Math.ceil(load.power-st.w)+' W номінальної потужності');
- if(problems.length)return {level:'fail',message:'Недостатньо: '+problems.join('; '),problems};
- if(!st.verified)return {level:'unknown',message:'Потребує перевірки: характеристики моделі попередні',problems:[]};
- if(load.surge>0)return {level:'unknown',message:'Потребує перевірки: потрібна пікова потужність не менше '+Math.ceil(load.power+load.surge)+' W; підтвердженого пікового параметра немає',problems:[]};
- if(items.some(x=>/холодильник|насос|компресор|котел/i.test(x.name)))return {level:'unknown',message:'Потребує перевірки: можливі пускові струми та особливості живлення',problems:[]};
- return {level:'candidate',message:'Попередньо достатньо за ємністю й номінальною потужністю; перевір тип виходу та умови виробника',problems:[]};
-}
-function validProfile(p){
- return p&&p.version===1&&Array.isArray(p.items)&&p.items.length<=100&&p.items.every(x=>typeof x.name==='string'&&x.name.length>0&&x.name.length<=120&&Number.isFinite(x.power)&&x.power>0&&x.power<=20000&&Number.isFinite(x.hours)&&x.hours>=0&&x.hours<=24&&Number.isInteger(x.qty)&&x.qty>=1&&x.qty<=50)&&p.settings&&typeof p.settings==='object';
-}
-function makeProfile(){return {version:1,items:items.map(x=>({...x})),settings:Object.fromEntries(['period','eff','dod','reserve','surgeExtra'].map(k=>[k,$(k).value])),savedAt:new Date().toISOString()};}
-function restoreProfile(p){
- if(!validProfile(p))throw Error('Некоректний файл розрахунку');
- const ranges={period:[4,24],eff:[50,100],dod:[10,100],reserve:[0,100],surgeExtra:[0,20000]};
- for(const [k,[lo,hi]] of Object.entries(ranges)){const n=Number(p.settings[k]);if(!Number.isFinite(n)||n<lo||n>hi)throw Error('Некоректне значення '+k)}
- if(!['4','6','8','12','24'].includes(String(p.settings.period)))throw Error('Недопустимий період');
- items=p.items.map(x=>({...x}));for(const k of Object.keys(ranges))$(k).value=p.settings[k];
- $('preset').value='';render();
-}
-$('saveProfile').addEventListener('click',()=>{try{localStorage.setItem(PROFILE_KEY,JSON.stringify(makeProfile()));$('profileStatus').textContent='Розрахунок збережено в цьому браузері.';}catch(e){$('profileStatus').textContent='Не вдалося зберегти: '+e.message}});
-$('loadProfile').addEventListener('click',()=>{try{const raw=localStorage.getItem(PROFILE_KEY);if(!raw)throw Error('Немає збереженого розрахунку');restoreProfile(JSON.parse(raw));$('profileStatus').textContent='Розрахунок відновлено.'}catch(e){$('profileStatus').textContent='Не вдалося відновити: '+e.message}});
-$('exportProfile').addEventListener('click',()=>downloadJSON('energopomichnyk-profile.json',makeProfile()));
-$('importProfile').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>100000)throw Error('Файл завеликий');restoreProfile(JSON.parse(await file.text()));$('profileStatus').textContent='Імпорт виконано.'}catch(err){$('profileStatus').textContent='Помилка імпорту: '+err.message}finally{e.target.value=''}});
-
-const userPrices=(()=>{try{return JSON.parse(localStorage.getItem('energyPricesV04')||'{}')}catch(e){return {}}})();
-function renderStations(requiredWh,requiredW){
- const root=$('stationList');if(!root)return;
- const brand=$('stationBrand').value,mode=$('stationShow').value;
- const query=$('stationSearch').value.trim().toLocaleLowerCase('uk-UA');
- const min=Number($('stationMin').value)||0,max=Number($('stationMax').value)||Infinity,budget=Number($('stationBudget').value)||Infinity;
- const energy=items.reduce((sum,x)=>sum+x.power*x.hours*x.qty,0);
- const eff=Math.min(100,Math.max(50,Number($('eff').value)||90))/100;
- const dod=Math.min(100,Math.max(10,Number($('dod').value)||85))/100;
- const reserve=Math.min(100,Math.max(0,Number($('reserve').value)||0))/100;
- const period=Number($('period').value)||6;
- const surgeExtra=Math.max(0,Number($('surgeExtra').value)||0);
- const safeOnly=$('compareOnly').value==='safe';
- const load=currentLoad();
- const fits=st=>assessment(st,load).level==='candidate';
- const checkedFit=fits;
- const matches=stations.filter(st=>{
-  const key=st.brand+'|'+st.model;
-  const liveOffers=activeOffers(st);
-  const price=liveOffers.length?Math.min(...liveOffers.map(o=>o.priceUah)):(userPrices[key]||priceSnapshots[key]?.uah);
-  return (brand==='all'||st.brand===brand)&&(!query||(st.brand+' '+st.model).toLocaleLowerCase('uk-UA').includes(query))&&st.wh>=min&&st.wh<=max&&(budget===Infinity||(price>0&&price<=budget))&&(mode!=='verified'||st.verified)&&(mode!=='fit'||fits(st))&&(!safeOnly||fits(st));
- });
- root.replaceChildren();
- $('stationSummary').textContent=`${matches.length} моделей за фільтрами з ${stations.length} у базі. Перевірених за першоджерелами: ${stations.filter(x=>x.verified).length}. Ціни зі знімків не є live-цінами. Імпортовані пропозиції позначаються за часом перевірки; невідомі ціни не підміняються нулем.`;
- if(!matches.length){root.textContent='За вибраними умовами моделей немає. Перевір фільтри, ціну або вимоги до живлення.';renderComparison();return}
- matches.sort((a,b)=>a.wh-b.wh).forEach(st=>{
-  const el=document.createElement('div');el.className='station';
-  const h=document.createElement('h3');h.textContent=st.brand+' '+st.model;el.appendChild(h);
-  const spec=document.createElement('p');spec.textContent=`${st.wh.toLocaleString('uk-UA')} Wh · ${st.w.toLocaleString('uk-UA')} W · ${st.chem}`;el.appendChild(spec);
-  const solar=document.createElement('p');solar.className='details';solar.textContent=st.solar!=null?`Сонячний вхід: до ${st.solar} W`:'Сонячний вхід: ще не перевірений';el.appendChild(solar);
-  const fit=document.createElement('p');fit.className=checkedFit(st)?'ok':'bad';
-  const verdict=assessment(st,load);
-  fit.className=verdict.level==='candidate'?'ok':verdict.level==='fail'?'bad':'details';
-  fit.textContent=verdict.message;
-  el.appendChild(fit);
-  const compareLabel=document.createElement('label');compareLabel.className='no-print';compareLabel.style.display='flex';compareLabel.style.alignItems='center';compareLabel.style.gap='8px';
-  const cb=document.createElement('input');cb.type='checkbox';cb.style.width='auto';cb.checked=selectedModels.has(st.brand+'|'+st.model);
-  cb.addEventListener('change',()=>{const key=st.brand+'|'+st.model;if(cb.checked&&selectedModels.size>=4){cb.checked=false;alert('Можна порівняти максимум 4 моделі');return;}if(cb.checked)selectedModels.add(key);else selectedModels.delete(key);renderComparison();});
-  compareLabel.appendChild(cb);compareLabel.append('Порівняти');el.appendChild(compareLabel);
-  const runtime=document.createElement('p');runtime.className='details';
-  if(energy<=0||requiredW<=0){runtime.textContent='Автономність: додай прилади для розрахунку';}
-  else if(st.w<requiredW){runtime.textContent='Автономність: навантаження перевищує номінальну потужність; розрахунок недоступний';}
-  else if(items.some(x=>x.hours>period)){runtime.textContent='Автономність: виправ години роботи (вони перевищують заданий період)';}
-  else {
-   const batteryWh=st.wh*dod*eff;
-   const hours=batteryWh/(energy/period);
-   runtime.textContent=`Теоретично: ${hours.toLocaleString('uk-UA',{maximumFractionDigits:1})} год, якщо заданий профіль навантаження повторюється (без запасу; середнє ${(energy/period).toLocaleString('uk-UA',{maximumFractionDigits:0})} Вт). Це не гарантія фактичного часу роботи.`;
-  }
-  el.appendChild(runtime);
-  const key=st.brand+'|'+st.model, snap=priceSnapshots[key];
-  if(snap){
-   const priceText=document.createElement('p');priceText.className='details';
-   priceText.textContent=`Ціна на ${snap.date}: ${snap.uah.toLocaleString('uk-UA')} грн · ${snap.shop} (знімок, не live)`;
-   el.appendChild(priceText);
-   const shopLink=document.createElement('a');shopLink.href=snap.url;shopLink.target='_blank';shopLink.rel='noopener noreferrer';shopLink.textContent='Перевірити ціну у продавця';el.appendChild(shopLink);
-  } else {
-   const unknown=document.createElement('p');unknown.className='details';unknown.textContent='Підтвердженої ціни немає';el.appendChild(unknown);
-  }
-  const feeds=offersFor(st);
-  feeds.forEach(o=>{
-   const p=document.createElement('p');p.className='details';
-   const age=Date.now()-Date.parse(o.checkedAt);
-   const freshness=age>=0&&age<86400000?'оновлено менш ніж 24 год тому':'застарілий або майбутній час перевірки';
-   const state={in_stock:'в наявності',out_of_stock:'немає в наявності',preorder:'під замовлення',unknown:'наявність невідома'}[o.availability];
-   p.textContent=`${o.shop} · ${o.priceUah.toLocaleString('uk-UA')} грн · ${state} · ${freshness} · SKU ${o.sku} · перевірено ${o.checkedAt}`;
-   el.appendChild(p);
-   const a=document.createElement('a');a.href=o.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Відкрити пропозицію продавця';el.appendChild(a);
-  });
-  const priceField=document.createElement('div');priceField.className='field no-print';priceField.style.margin='8px 0';
-  const label=document.createElement('label');label.textContent='Моя ціна, грн (перевизначає знімок)';priceField.appendChild(label);
-  const priceInput=document.createElement('input');priceInput.type='number';priceInput.min='0';priceInput.placeholder='Вкажи ціну';priceInput.value=userPrices[st.brand+'|'+st.model]||'';
-  priceInput.addEventListener('change',()=>{const key=st.brand+'|'+st.model;const val=Number(priceInput.value);if(val>0)userPrices[key]=val;else delete userPrices[key];try{localStorage.setItem('energyPricesV04',JSON.stringify(userPrices))}catch(e){};renderStations(requiredWh,requiredW)});
-  priceField.appendChild(priceInput);el.appendChild(priceField);
-  const link=document.createElement('a');link.href=st.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent=st.verified?'Переглянути технічне джерело':'Перевірити модель у каталозі';el.appendChild(link);
-  root.appendChild(el);
- });
- renderComparison();
-}
-function renderComparison(){
- const root=$('compareTable');if(!root)return;
- const chosen=stations.filter(st=>selectedModels.has(st.brand+'|'+st.model));
- root.replaceChildren();
- if(!chosen.length){root.textContent='Поки нічого не вибрано.';return;}
- const table=document.createElement('table');table.style.width='100%';table.style.fontSize='13px';table.style.borderCollapse='collapse';
- const rows=[['Показник',...chosen.map(x=>x.brand+' '+x.model)],
- ['Ємність, Wh',...chosen.map(x=>String(x.wh))],
- ['Номінальна потужність, W',...chosen.map(x=>String(x.w))],
- ['Тип батареї',...chosen.map(x=>x.chem)],
- ['Джерело характеристик',...chosen.map(x=>x.verified?'Звірено':'Попередні')],
- ['Оцінка придатності',...chosen.map(x=>assessment(x,currentLoad()).message)]];
- rows.forEach((r,i)=>{const tr=document.createElement('tr');r.forEach(v=>{const cell=document.createElement(i?'td':'th');cell.textContent=v;cell.style.borderBottom='1px solid #dce5ec';cell.style.padding='9px 6px';cell.style.textAlign='left';tr.appendChild(cell)});table.appendChild(tr)});
- const scroll=document.createElement('div');scroll.style.overflowX='auto';scroll.appendChild(table);root.appendChild(scroll);
-}
-['surgeExtra','compareOnly'].forEach(id=>$(id).addEventListener('input',calculate));
-['stationBrand','stationShow'].forEach(id=>$(id).addEventListener('change',calculate));
-['stationSearch','stationMin','stationMax','stationBudget'].forEach(id=>$(id).addEventListener('input',calculate));
-
-$('pdf').addEventListener('click',()=>window.print());render();
-</script>
-</body></html>
+function renderCompare(){const root=$('compare');root.replaceChildren();const list=stations.filter(s=>compare.has(s.brand+'|'+s.model));if(!list.length){root.textContent='Відміть моделі у списку вище.';return}const t=document.createElement('table');for(const row of [['Модель',...list.map(s=>s.brand+' '+s.model)],['Ємність, Wh',...list.map(s=>fmt(s.wh))],['Потужність, W',...list.map(s=>fmt(s.w))],['Перевірка',...list.map(s=>s.verified?'Звірено':'Попередньо')],['Ціна (історична)',...list.map(s=>priceFor(s)?fmt(priceFor(s).uah)+' грн':'Невідома')]]){const tr=document.createElement('tr');row.forEach((v,i)=>{const c=document.createElement(i===0?'th':'td');c.textContent=v;tr.append(c)});t.append(tr)}root.append(t)}
+</script></body></html>
