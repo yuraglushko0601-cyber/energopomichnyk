@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#102a43">
-<title>ЕнергоПомічник v0.8 v0.5 — 0.2 — калькулятор і каталог</title>
+<title>ЕнергоПомічник v0.9 v0.5 — 0.2 — калькулятор і каталог</title>
 <style>
 :root{--ink:#142536;--muted:#607487;--line:#dce5ec;--bg:#f3f7fa;--blue:#1769aa;--green:#13795b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -86,8 +86,9 @@ footer{color:var(--muted);font-size:12px;padding-bottom:28px}
 </div><div class="card no-print" style="margin:12px 0;background:#f8fbfd">
 <h3>Пускове навантаження та порівняння</h3>
 <div class="grid2"><div class="field"><label for="surgeExtra">Додатковий пусковий запас, Вт</label><input id="surgeExtra" type="number" min="0" max="20000" value="0"></div><div class="field"><label for="compareOnly">Режим підбору</label><select id="compareOnly"><option value="all">Усі моделі з позначенням ризиків</option><option value="safe">Лише перевірені й достатні за номіналом</option></select></div></div>
+<div class="toolbar no-print"><button class="secondary" id="saveProfile" type="button">Зберегти мій розрахунок</button><button class="ghost" id="loadProfile" type="button">Відновити розрахунок</button><button class="ghost" id="exportProfile" type="button">Експорт JSON</button><label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">Імпорт JSON <input type="file" id="importProfile" accept=".json,application/json" style="max-width:190px"></label></div><p class="muted" id="profileStatus" aria-live="polite">Розрахунок зберігається тільки у цьому браузері за твоєю командою.</p>
 <p class="muted">Для холодильника, насоса або компресора вкажи додаткову пускову потужність із паспорта. Якщо вона невідома, сумісність не підтверджена навіть за достатньої номінальної потужності.</p>
-</div><div class="card" id="comparePanel"><h3>Порівняння станцій (до 4)</h3><p class="muted">Обери моделі в картках нижче.</p><div id="compareTable"></div></div><p id="stationSummary" class="muted"></p><div id="stationList" class="station-grid"></div><div class="note">Увага: це порівняння за двома параметрами, а не гарантія сумісності. Пускові струми, AC/DC виходи, локальна версія пристрою та фактична корисна ємність потребують окремої перевірки. Для підбору за AC-потужністю вважаємо, що всі додані прилади можуть працювати одночасно.</div></section></main>
+</div><div class="note">Оцінка придатності має три рівні: <b>недостатньо</b> (бракує ємності або номінальної потужності), <b>попередньо достатньо</b> (обидва параметри виконано, але сумісність ще не гарантована), <b>потребує перевірки</b> (невідомі характеристики, пусковий струм чи тип виходу). Жоден рівень не є гарантією безпечного підключення.</div><div class="card" id="comparePanel"><h3>Порівняння станцій (до 4)</h3><p class="muted">Обери моделі в картках нижче.</p><div id="compareTable"></div></div><p id="stationSummary" class="muted"></p><div id="stationList" class="station-grid"></div><div class="note">Увага: це порівняння за двома параметрами, а не гарантія сумісності. Пускові струми, AC/DC виходи, локальна версія пристрою та фактична корисна ємність потребують окремої перевірки. Для підбору за AC-потужністю вважаємо, що всі додані прилади можуть працювати одночасно.</div></section></main>
 <footer class="wrap">Важливо: це попередня оцінка, а не інженерний проєкт. Реальний час роботи залежить від температури, стану батареї, пікових навантажень, пускових струмів і характеристик станції. Не підключай станцію до домашньої електромережі без належного обладнання та кваліфікованого електрика.</footer>
 <script>
 const catalog=[['Wi-Fi роутер',12],['Оптичний термінал (ONU)',5],['LED-лампа',10],['Ноутбук',60],['Смартфон — заряджання',15],['Телевізор LED',100],['Холодильник',150],['Настільний ПК',250],['Монітор',35],['Газовий котел',120],['Вентилятор',45],['Електрочайник',1800]];
@@ -212,6 +213,45 @@ function activeOffers(st){
 }
 
 const selectedModels=new Set();
+const PROFILE_KEY='energopomichnyk-profile-v09';
+function currentLoad(){
+ const period=Math.max(1,Number($('period').value)||6);
+ const energy=items.reduce((sum,x)=>sum+Math.max(0,x.power)*Math.max(0,x.hours)*Math.max(0,x.qty),0);
+ const power=items.reduce((sum,x)=>sum+Math.max(0,x.power)*Math.max(0,x.qty),0);
+ const eff=Math.min(1,Math.max(.5,(Number($('eff').value)||90)/100));
+ const dod=Math.min(1,Math.max(.1,(Number($('dod').value)||85)/100));
+ const reserve=Math.min(1,Math.max(0,(Number($('reserve').value)||0)/100));
+ const surge=Math.max(0,Number($('surgeExtra').value)||0);
+ return {period,energy,power,eff,dod,reserve,surge,requiredWh:energy/(eff*dod)*(1+reserve)};
+}
+function assessment(st,load){
+ const problems=[];
+ if(!load.energy)return {level:'unknown',message:'Додай пристрої для оцінки',problems:[]};
+ if(st.wh<load.requiredWh)problems.push('бракує '+Math.ceil(load.requiredWh-st.wh)+' Wh ємності');
+ if(st.w<load.power)problems.push('бракує '+Math.ceil(load.power-st.w)+' W номінальної потужності');
+ if(problems.length)return {level:'fail',message:'Недостатньо: '+problems.join('; '),problems};
+ if(!st.verified)return {level:'unknown',message:'Потребує перевірки: характеристики моделі попередні',problems:[]};
+ if(load.surge>0)return {level:'unknown',message:'Потребує перевірки: потрібна пікова потужність не менше '+Math.ceil(load.power+load.surge)+' W; підтвердженого пікового параметра немає',problems:[]};
+ if(items.some(x=>/холодильник|насос|компресор|котел/i.test(x.name)))return {level:'unknown',message:'Потребує перевірки: можливі пускові струми та особливості живлення',problems:[]};
+ return {level:'candidate',message:'Попередньо достатньо за ємністю й номінальною потужністю; перевір тип виходу та умови виробника',problems:[]};
+}
+function validProfile(p){
+ return p&&p.version===1&&Array.isArray(p.items)&&p.items.length<=100&&p.items.every(x=>typeof x.name==='string'&&x.name.length>0&&x.name.length<=120&&Number.isFinite(x.power)&&x.power>0&&x.power<=20000&&Number.isFinite(x.hours)&&x.hours>=0&&x.hours<=24&&Number.isInteger(x.qty)&&x.qty>=1&&x.qty<=50)&&p.settings&&typeof p.settings==='object';
+}
+function makeProfile(){return {version:1,items:items.map(x=>({...x})),settings:Object.fromEntries(['period','eff','dod','reserve','surgeExtra'].map(k=>[k,$(k).value])),savedAt:new Date().toISOString()};}
+function restoreProfile(p){
+ if(!validProfile(p))throw Error('Некоректний файл розрахунку');
+ const ranges={period:[4,24],eff:[50,100],dod:[10,100],reserve:[0,100],surgeExtra:[0,20000]};
+ for(const [k,[lo,hi]] of Object.entries(ranges)){const n=Number(p.settings[k]);if(!Number.isFinite(n)||n<lo||n>hi)throw Error('Некоректне значення '+k)}
+ if(!['4','6','8','12','24'].includes(String(p.settings.period)))throw Error('Недопустимий період');
+ items=p.items.map(x=>({...x}));for(const k of Object.keys(ranges))$(k).value=p.settings[k];
+ $('preset').value='';render();
+}
+$('saveProfile').addEventListener('click',()=>{try{localStorage.setItem(PROFILE_KEY,JSON.stringify(makeProfile()));$('profileStatus').textContent='Розрахунок збережено в цьому браузері.';}catch(e){$('profileStatus').textContent='Не вдалося зберегти: '+e.message}});
+$('loadProfile').addEventListener('click',()=>{try{const raw=localStorage.getItem(PROFILE_KEY);if(!raw)throw Error('Немає збереженого розрахунку');restoreProfile(JSON.parse(raw));$('profileStatus').textContent='Розрахунок відновлено.'}catch(e){$('profileStatus').textContent='Не вдалося відновити: '+e.message}});
+$('exportProfile').addEventListener('click',()=>downloadJSON('energopomichnyk-profile.json',makeProfile()));
+$('importProfile').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>100000)throw Error('Файл завеликий');restoreProfile(JSON.parse(await file.text()));$('profileStatus').textContent='Імпорт виконано.'}catch(err){$('profileStatus').textContent='Помилка імпорту: '+err.message}finally{e.target.value=''}});
+
 const userPrices=(()=>{try{return JSON.parse(localStorage.getItem('energyPricesV04')||'{}')}catch(e){return {}}})();
 function renderStations(requiredWh,requiredW){
  const root=$('stationList');if(!root)return;
@@ -225,8 +265,9 @@ function renderStations(requiredWh,requiredW){
  const period=Number($('period').value)||6;
  const surgeExtra=Math.max(0,Number($('surgeExtra').value)||0);
  const safeOnly=$('compareOnly').value==='safe';
- const fits=st=>energy>0&&st.verified&&st.wh>=requiredWh&&st.w>=requiredW;
- const checkedFit=st=>fits(st)&&surgeExtra===0;
+ const load=currentLoad();
+ const fits=st=>assessment(st,load).level==='candidate';
+ const checkedFit=fits;
  const matches=stations.filter(st=>{
   const key=st.brand+'|'+st.model;
   const liveOffers=activeOffers(st);
@@ -242,8 +283,9 @@ function renderStations(requiredWh,requiredW){
   const spec=document.createElement('p');spec.textContent=`${st.wh.toLocaleString('uk-UA')} Wh · ${st.w.toLocaleString('uk-UA')} W · ${st.chem}`;el.appendChild(spec);
   const solar=document.createElement('p');solar.className='details';solar.textContent=st.solar!=null?`Сонячний вхід: до ${st.solar} W`:'Сонячний вхід: ще не перевірений';el.appendChild(solar);
   const fit=document.createElement('p');fit.className=checkedFit(st)?'ok':'bad';
-  fit.textContent=!energy?'Додай навантаження для підбору':!st.verified?'⚠ Попередні характеристики: рекомендація не підтверджена':!fits(st)?'✕ Недостатня ємність або номінальна потужність':'✓ Достатньо за ємністю та номінальною потужністю';
-  if(surgeExtra>0)fit.textContent+=' · Пускова потужність потребує окремої перевірки (у каталозі немає підтверджених пікових характеристик)';
+  const verdict=assessment(st,load);
+  fit.className=verdict.level==='candidate'?'ok':verdict.level==='fail'?'bad':'details';
+  fit.textContent=verdict.message;
   el.appendChild(fit);
   const compareLabel=document.createElement('label');compareLabel.className='no-print';compareLabel.style.display='flex';compareLabel.style.alignItems='center';compareLabel.style.gap='8px';
   const cb=document.createElement('input');cb.type='checkbox';cb.style.width='auto';cb.checked=selectedModels.has(st.brand+'|'+st.model);
@@ -252,10 +294,11 @@ function renderStations(requiredWh,requiredW){
   const runtime=document.createElement('p');runtime.className='details';
   if(energy<=0||requiredW<=0){runtime.textContent='Автономність: додай прилади для розрахунку';}
   else if(st.w<requiredW){runtime.textContent='Автономність: навантаження перевищує номінальну потужність; розрахунок недоступний';}
+  else if(items.some(x=>x.hours>period)){runtime.textContent='Автономність: виправ години роботи (вони перевищують заданий період)';}
   else {
    const batteryWh=st.wh*dod*eff;
    const hours=batteryWh/(energy/period);
-   runtime.textContent=`Орієнтовна автономність за поточним профілем: ${hours.toLocaleString('uk-UA',{maximumFractionDigits:1})} год (без запасу; середнє навантаження ${(energy/period).toLocaleString('uk-UA',{maximumFractionDigits:0})} Вт)`;
+   runtime.textContent=`Теоретично: ${hours.toLocaleString('uk-UA',{maximumFractionDigits:1})} год, якщо заданий профіль навантаження повторюється (без запасу; середнє ${(energy/period).toLocaleString('uk-UA',{maximumFractionDigits:0})} Вт). Це не гарантія фактичного часу роботи.`;
   }
   el.appendChild(runtime);
   const key=st.brand+'|'+st.model, snap=priceSnapshots[key];
@@ -297,7 +340,8 @@ function renderComparison(){
  ['Ємність, Wh',...chosen.map(x=>String(x.wh))],
  ['Номінальна потужність, W',...chosen.map(x=>String(x.w))],
  ['Тип батареї',...chosen.map(x=>x.chem)],
- ['Джерело характеристик',...chosen.map(x=>x.verified?'Звірено':'Попередні')]];
+ ['Джерело характеристик',...chosen.map(x=>x.verified?'Звірено':'Попередні')],
+ ['Оцінка придатності',...chosen.map(x=>assessment(x,currentLoad()).message)]];
  rows.forEach((r,i)=>{const tr=document.createElement('tr');r.forEach(v=>{const cell=document.createElement(i?'td':'th');cell.textContent=v;cell.style.borderBottom='1px solid #dce5ec';cell.style.padding='9px 6px';cell.style.textAlign='left';tr.appendChild(cell)});table.appendChild(tr)});
  const scroll=document.createElement('div');scroll.style.overflowX='auto';scroll.appendChild(table);root.appendChild(scroll);
 }
