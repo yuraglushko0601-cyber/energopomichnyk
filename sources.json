@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "id": "merchant-demo",
+      "name": "Приклад дозволеного фіда (вимкнено)",
+      "enabled": false,
+      "feed_url": "https://feeds.example.com/energopomichnyk.json",
+      "allowed_feed_hosts": ["feeds.example.com"],
+      "allowed_product_hosts": ["shop.example.com"]
+    }
+  ]
+}
