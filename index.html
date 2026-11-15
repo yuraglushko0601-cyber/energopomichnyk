@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#102a43">
-<title>ЕнергоПомічник v0.5 — 0.2 — калькулятор і каталог</title>
+<title>ЕнергоПомічник v0.8 v0.5 — 0.2 — калькулятор і каталог</title>
 <style>
 :root{--ink:#142536;--muted:#607487;--line:#dce5ec;--bg:#f3f7fa;--blue:#1769aa;--green:#13795b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -83,7 +83,11 @@ footer{color:var(--muted);font-size:12px;padding-bottom:28px}
 <p class="muted">Серверний модуль може щодня оновлювати дозволені фіди магазинів після налаштування. У локальному режимі доступний ручний імпорт. Імпортуй JSON-фід із дозволеного джерела або експортуй шаблон для інтеграції. Для кожної пропозиції зберігаємо модель, продавця, URL товару, ціну, наявність і час перевірки.</p>
 <div class="toolbar"><button class="primary" id="feedRefresh" type="button">Оновити з сервера</button><button class="secondary" id="feedTemplate" type="button">Завантажити шаблон JSON</button><label style="display:inline-flex;align-items:center;gap:8px">Імпортувати JSON <input id="feedImport" type="file" accept=".json,application/json" style="max-width:220px"></label><button class="ghost" id="feedClear" type="button">Очистити імпорт</button></div>
 <p id="feedStatus" class="muted" aria-live="polite"></p>
-</div><p id="stationSummary" class="muted"></p><div id="stationList" class="station-grid"></div><div class="note">Увага: це порівняння за двома параметрами, а не гарантія сумісності. Пускові струми, AC/DC виходи, локальна версія пристрою та фактична корисна ємність потребують окремої перевірки. Для підбору за AC-потужністю вважаємо, що всі додані прилади можуть працювати одночасно.</div></section></main>
+</div><div class="card no-print" style="margin:12px 0;background:#f8fbfd">
+<h3>Пускове навантаження та порівняння</h3>
+<div class="grid2"><div class="field"><label for="surgeExtra">Додатковий пусковий запас, Вт</label><input id="surgeExtra" type="number" min="0" max="20000" value="0"></div><div class="field"><label for="compareOnly">Режим підбору</label><select id="compareOnly"><option value="all">Усі моделі з позначенням ризиків</option><option value="safe">Лише перевірені й достатні за номіналом</option></select></div></div>
+<p class="muted">Для холодильника, насоса або компресора вкажи додаткову пускову потужність із паспорта. Якщо вона невідома, сумісність не підтверджена навіть за достатньої номінальної потужності.</p>
+</div><div class="card" id="comparePanel"><h3>Порівняння станцій (до 4)</h3><p class="muted">Обери моделі в картках нижче.</p><div id="compareTable"></div></div><p id="stationSummary" class="muted"></p><div id="stationList" class="station-grid"></div><div class="note">Увага: це порівняння за двома параметрами, а не гарантія сумісності. Пускові струми, AC/DC виходи, локальна версія пристрою та фактична корисна ємність потребують окремої перевірки. Для підбору за AC-потужністю вважаємо, що всі додані прилади можуть працювати одночасно.</div></section></main>
 <footer class="wrap">Важливо: це попередня оцінка, а не інженерний проєкт. Реальний час роботи залежить від температури, стану батареї, пікових навантажень, пускових струмів і характеристик станції. Не підключай станцію до домашньої електромережі без належного обладнання та кваліфікованого електрика.</footer>
 <script>
 const catalog=[['Wi-Fi роутер',12],['Оптичний термінал (ONU)',5],['LED-лампа',10],['Ноутбук',60],['Смартфон — заряджання',15],['Телевізор LED',100],['Холодильник',150],['Настільний ПК',250],['Монітор',35],['Газовий котел',120],['Вентилятор',45],['Електрочайник',1800]];
@@ -101,7 +105,7 @@ function render(){
  });calculate();
 }
 function calculate(){
- const energy=items.reduce((s,x)=>s+x.power*x.hours*x.qty,0),peak=items.reduce((s,x)=>s+x.power*x.qty,0);
+ const energy=items.reduce((s,x)=>s+Math.max(0,x.power)*Math.max(0,x.hours)*Math.max(0,x.qty),0),peak=items.reduce((s,x)=>s+Math.max(0,x.power)*Math.max(0,x.qty),0);
  const eff=Math.min(100,Math.max(50,number($('eff').value,90)))/100,dod=Math.min(100,Math.max(10,number($('dod').value,85)))/100,res=Math.min(100,Math.max(0,number($('reserve').value,15)))/100;
  const capacity=energy/(eff*dod)*(1+res),fmt=n=>Math.round(n).toLocaleString('uk-UA');
  $('capacity').textContent=fmt(capacity)+' Wh';$('kwh').textContent='≈ '+(capacity/1000).toLocaleString('uk-UA',{maximumFractionDigits:2})+' кВт·год';
@@ -109,6 +113,7 @@ function calculate(){
  let message='Перевір, щоб номінальна та пікова потужність станції відповідали навантаженню.';
  if(!items.length)message='Додай пристрої, щоб отримати розрахунок.';
  else if(items.some(x=>x.hours>number($('period').value)))message='Увага: для одного чи кількох пристроїв задано більше годин роботи, ніж тривалість періоду.';
+ else if(items.some(x=>/холодильник|насос|компресор|котел/i.test(x.name)))message='Для холодильників, насосів і котлів враховуй циклічність та пускові струми. Години роботи — фактичні години споживання, а не весь період відключення.';
  else if(peak>2000)message='Високе сумарне навантаження. Окремо перевір пускові струми холодильника, насосів та інших приладів із двигунами.';
  $('warning').textContent=message;renderStations(capacity,peak);
 }
@@ -206,6 +211,7 @@ function activeOffers(st){
  return offersFor(st).filter(o=>o.availability==='in_stock'&&Date.now()-Date.parse(o.checkedAt)<86400000);
 }
 
+const selectedModels=new Set();
 const userPrices=(()=>{try{return JSON.parse(localStorage.getItem('energyPricesV04')||'{}')}catch(e){return {}}})();
 function renderStations(requiredWh,requiredW){
  const root=$('stationList');if(!root)return;
@@ -217,21 +223,32 @@ function renderStations(requiredWh,requiredW){
  const dod=Math.min(100,Math.max(10,Number($('dod').value)||85))/100;
  const reserve=Math.min(100,Math.max(0,Number($('reserve').value)||0))/100;
  const period=Number($('period').value)||6;
+ const surgeExtra=Math.max(0,Number($('surgeExtra').value)||0);
+ const safeOnly=$('compareOnly').value==='safe';
+ const fits=st=>energy>0&&st.verified&&st.wh>=requiredWh&&st.w>=requiredW;
+ const checkedFit=st=>fits(st)&&surgeExtra===0;
  const matches=stations.filter(st=>{
   const key=st.brand+'|'+st.model;
   const liveOffers=activeOffers(st);
   const price=liveOffers.length?Math.min(...liveOffers.map(o=>o.priceUah)):(userPrices[key]||priceSnapshots[key]?.uah);
-  return (brand==='all'||st.brand===brand)&&(!query||(st.brand+' '+st.model).toLocaleLowerCase('uk-UA').includes(query))&&st.wh>=min&&st.wh<=max&&(budget===Infinity||(price>0&&price<=budget))&&(mode!=='verified'||st.verified)&&(mode!=='fit'||(st.wh>=requiredWh&&st.w>=requiredW));
+  return (brand==='all'||st.brand===brand)&&(!query||(st.brand+' '+st.model).toLocaleLowerCase('uk-UA').includes(query))&&st.wh>=min&&st.wh<=max&&(budget===Infinity||(price>0&&price<=budget))&&(mode!=='verified'||st.verified)&&(mode!=='fit'||fits(st))&&(!safeOnly||fits(st));
  });
  root.replaceChildren();
  $('stationSummary').textContent=`${matches.length} моделей за фільтрами з ${stations.length} у базі. Перевірених за першоджерелами: ${stations.filter(x=>x.verified).length}. Ціни зі знімків не є live-цінами. Імпортовані пропозиції позначаються за часом перевірки; невідомі ціни не підміняються нулем.`;
- if(!matches.length){root.textContent='За вибраними умовами моделей немає. Зніми бюджетний фільтр або внеси власну ціну для моделі без цінового знімка.';return}
+ if(!matches.length){root.textContent='За вибраними умовами моделей немає. Перевір фільтри, ціну або вимоги до живлення.';renderComparison();return}
  matches.sort((a,b)=>a.wh-b.wh).forEach(st=>{
   const el=document.createElement('div');el.className='station';
   const h=document.createElement('h3');h.textContent=st.brand+' '+st.model;el.appendChild(h);
   const spec=document.createElement('p');spec.textContent=`${st.wh.toLocaleString('uk-UA')} Wh · ${st.w.toLocaleString('uk-UA')} W · ${st.chem}`;el.appendChild(spec);
   const solar=document.createElement('p');solar.className='details';solar.textContent=st.solar!=null?`Сонячний вхід: до ${st.solar} W`:'Сонячний вхід: ще не перевірений';el.appendChild(solar);
-  const fit=document.createElement('p');fit.className=st.wh>=requiredWh&&st.w>=requiredW?'ok':'bad';fit.textContent=(st.wh>=requiredWh&&st.w>=requiredW?'✓ За ємністю та потужністю підходить':'✕ За ємністю або потужністю не підходить')+(st.verified?' · Дані звірені':' · Характеристики попередні');el.appendChild(fit);
+  const fit=document.createElement('p');fit.className=checkedFit(st)?'ok':'bad';
+  fit.textContent=!energy?'Додай навантаження для підбору':!st.verified?'⚠ Попередні характеристики: рекомендація не підтверджена':!fits(st)?'✕ Недостатня ємність або номінальна потужність':'✓ Достатньо за ємністю та номінальною потужністю';
+  if(surgeExtra>0)fit.textContent+=' · Пускова потужність потребує окремої перевірки (у каталозі немає підтверджених пікових характеристик)';
+  el.appendChild(fit);
+  const compareLabel=document.createElement('label');compareLabel.className='no-print';compareLabel.style.display='flex';compareLabel.style.alignItems='center';compareLabel.style.gap='8px';
+  const cb=document.createElement('input');cb.type='checkbox';cb.style.width='auto';cb.checked=selectedModels.has(st.brand+'|'+st.model);
+  cb.addEventListener('change',()=>{const key=st.brand+'|'+st.model;if(cb.checked&&selectedModels.size>=4){cb.checked=false;alert('Можна порівняти максимум 4 моделі');return;}if(cb.checked)selectedModels.add(key);else selectedModels.delete(key);renderComparison();});
+  compareLabel.appendChild(cb);compareLabel.append('Порівняти');el.appendChild(compareLabel);
   const runtime=document.createElement('p');runtime.className='details';
   if(energy<=0||requiredW<=0){runtime.textContent='Автономність: додай прилади для розрахунку';}
   else if(st.w<requiredW){runtime.textContent='Автономність: навантаження перевищує номінальну потужність; розрахунок недоступний';}
@@ -268,7 +285,23 @@ function renderStations(requiredWh,requiredW){
   const link=document.createElement('a');link.href=st.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent=st.verified?'Переглянути технічне джерело':'Перевірити модель у каталозі';el.appendChild(link);
   root.appendChild(el);
  });
+ renderComparison();
 }
+function renderComparison(){
+ const root=$('compareTable');if(!root)return;
+ const chosen=stations.filter(st=>selectedModels.has(st.brand+'|'+st.model));
+ root.replaceChildren();
+ if(!chosen.length){root.textContent='Поки нічого не вибрано.';return;}
+ const table=document.createElement('table');table.style.width='100%';table.style.fontSize='13px';table.style.borderCollapse='collapse';
+ const rows=[['Показник',...chosen.map(x=>x.brand+' '+x.model)],
+ ['Ємність, Wh',...chosen.map(x=>String(x.wh))],
+ ['Номінальна потужність, W',...chosen.map(x=>String(x.w))],
+ ['Тип батареї',...chosen.map(x=>x.chem)],
+ ['Джерело характеристик',...chosen.map(x=>x.verified?'Звірено':'Попередні')]];
+ rows.forEach((r,i)=>{const tr=document.createElement('tr');r.forEach(v=>{const cell=document.createElement(i?'td':'th');cell.textContent=v;cell.style.borderBottom='1px solid #dce5ec';cell.style.padding='9px 6px';cell.style.textAlign='left';tr.appendChild(cell)});table.appendChild(tr)});
+ const scroll=document.createElement('div');scroll.style.overflowX='auto';scroll.appendChild(table);root.appendChild(scroll);
+}
+['surgeExtra','compareOnly'].forEach(id=>$(id).addEventListener('input',calculate));
 ['stationBrand','stationShow'].forEach(id=>$(id).addEventListener('change',calculate));
 ['stationSearch','stationMin','stationMax','stationBudget'].forEach(id=>$(id).addEventListener('input',calculate));
 
